@@ -1,0 +1,87 @@
+---
+title: "Index"
+author: "Monica Pittiglio"
+date: "8/6/2020"
+output: html_document
+---
+
+My report will analyze the differences in COVID-related death count between countries with universal healthcare and countries with non-universal healthcare.
+
+```{r setup, include = FALSE, echo = FALSE}
+# Just a load of all the packages I used or attempted to use for this project.
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(directlabels)
+library(tidyquant)
+```
+
+```{r, echo = FALSE, include = FALSE}
+
+# Load coronavirus dataset
+Global <- read_csv("~/GitHub/COVID-19/raw_data/WHO-COVID-19-global-data (1).csv")
+
+#Filter of COVID data for countries with non-universal healthcare
+NonUniversal <- Global %>%
+  filter(Country %in% c("Bangladesh", "Burundi", "Congo", "Ethiopia", "Jordan", "Kenya", "Nigeria", "Paraguay", "United Arab Emirates", "United Republic of Tanzania", "Uganda", "United States of America"))
+```
+
+The data used in the following graph was from a data frame called NonUniversal that included country names and cumulative deaths, among a lot of other information, for the countries that do not have universal healthcare. The graph was done by first creating aesthetics date on the x-axis, cumulative deaths on the y-axis, colored by country. The geom_line layer was added next along with a log 10 scale on the y-axis, figure title, axis labels, labels at the ends of each lines, an extension of the x-axis for readability, and finally, the legend is deleted.
+
+```{r, fig.align = "center", fig.height = 12, echo = FALSE}
+# Line graph of total deaths by country, non-universal healthcare.
+# I made this graph abnormally tall so that it wasn't too squished!!!
+ggplot(NonUniversal, aes(x = Date_reported, y = Cumulative_deaths, color = Country)) +
+  geom_line() +
+  scale_y_log10() +
+   ggtitle("Figure 1: Cumulative Deaths Over Time in Countries with Non-Universal Healthcare") +
+  labs(x = "Month", y = "Cumulative Deaths") +
+  geom_dl(aes(label = Country), method = list(dl.combine("last.points")), cex = 0.8) +
+  coord_x_date(xlim = c("2020-01-15", "2020-11-01")) +
+  theme(legend.position = "none")
+```
+
+```{r echo = FALSE, include = FALSE}
+
+#Filter of COVID data for countries with universal healthcare
+Universal <- Global %>%
+  filter(Country %in% c("Australia", "Bahrain", "Bhutan", "Botswana", "Brazil", "Brunei Darussalam", "Canada", "Cuba", "Denmark", "Finland", "Georgia", "Greece", "Iceland", "Ireland", "Italy", "Kuwait", "Malta", "New Zealand", "Norway", "Oman", "Portugal", "San Marino", "Saudi Arabia", "South Africa", "Spain", "Sri Lanka", "Sweden", "Trinidad and Tobago", "The United Kingdom"))
+```
+
+The code for the following graph is the same as above, but the data frame used was called Universal, and is a set of country names and cumulative deaths, among other information, for countries with universal healthcare.
+
+```{r, fig.align = "center", fig.height = 12, echo = FALSE}
+# Line graph of total deaths by country, universal healthcare.
+# I made this graph abnormally tall so that it wasn't too squished!!!
+ggplot(Universal, aes(x = Date_reported, y = Cumulative_deaths, color = Country)) +
+  geom_line() +
+  scale_y_log10() +
+  ggtitle("Figure 2: Cumulative Deaths Over Time in Countries with Universal Healthcare") +
+  labs(x = "Month", y = "Cumulative Deaths") +
+  geom_dl(aes(label = Country), method = list(dl.combine("last.points")), cex = 0.8) +
+  coord_x_date(xlim = c("2020-01-15", "2020-10-01")) +
+  theme(legend.position = "none")
+```
+
+```{r, echo = FALSE, include = FALSE}
+
+# Load data that includes population and healthcare type by country
+Population_and_Healthcare <- read_csv("~/GitHub/COVID-19/output/Population and Healthcare.csv")
+
+# Filter for all the countries we're looking at, both with universal and non-universal healthcare
+AllPopAndHealth <- Population_and_Healthcare %>%
+  filter(Country_name %in% c("Australia", "Bahrain", "Bhutan", "Botswana", "Brazil", "Brunei Darussalam", "Canada", "Cuba", "Denmark", "Finland", "Georgia", "Greece", "Iceland", "Ireland", "Italy", "Kuwait", "Malta", "New Zealand", "Norway", "Oman", "Portugal", "San Marino", "Saudi Arabia", "South Africa", "Spain", "Sri Lanka", "Sweden", "Trinidad and Tobago", "The United Kingdom", "Bangladesh", "Burundi", "Congo", "Ethiopia", "Jordan", "Kenya", "Nigeria", "Paraguay", "United Arab Emirates", "United Republic of Tanzania", "Uganda", "United States of America"))
+```
+
+The data used in the following graph was from a data frame called AllPopAndHealth that included country names and populations for the countries that had one of two healthcare types - universal or non-universal. The graph was done by first reordering the data in ascending order by population. Next, aesthetics were added - population on the x-axis, country name on the y-axis, colored by healthcare. The geom_point layer was added next along with the point size, bars from the y-axis to the points, figure title, and axis labels.
+
+```{r, fig.width = 14, fig.height = 7, echo = FALSE}
+# Point plot with lines of 2019 population, by healthcare type.
+AllPopAndHealth%>%
+  mutate(CN = fct_reorder(Country_name, Year_2019)) %>%
+  ggplot( aes(x = Year_2019, y = CN, color = Healthcare)) +
+  geom_point(size = 4) +
+  geom_segment(aes(xend = 0, yend = Country_name), size = 2) +
+  ggtitle("Figure 3: Total population in Countries with Both Healthcare Types") +
+  labs(x = "Population", y = "Country")
+```
